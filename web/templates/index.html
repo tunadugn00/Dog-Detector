@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Breed Detector</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --accent-color: #2ecc71;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: url("{{ url_for('static', filename='690447.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--accent-color);
+            margin: 15px auto;
+            border-radius: 2px;
+        }
+
+        .description {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+
+        .upload-form {
+            background: var(--secondary-color);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px auto;
+            max-width: 600px;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-form:hover {
+            transform: translateY(-5px);
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: var(--accent-color);
+            background: #f8f9fa;
+        }
+
+        .analyze-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .analyze-btn:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .image-container {
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container img {
+            width: auto;  
+            height: 400px;
+            object-fit: cover; 
+            border-radius: 10px; 
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.02);
+        }
+
+        .prediction {
+            background: linear-gradient(135deg, #4a90e2, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .prediction h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prediction p {
+            font-size: 1.2em;
+            margin: 0;
+        }
+
+        .error {
+            background: #ff7675;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            animation: shake 0.5s ease-in-out;
+        }
+        .breed-name {
+            font-size: 2.0em !important;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #FFD700; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
+        }
+        
+        
+        .breed-details {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            color: var(--text-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .confidence {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .description {
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-areas:
+                "origin lifespan temperament"
+                "height weight colors";
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .detail-item:nth-child(1) { grid-area: origin; }
+        .detail-item:nth-child(2) { grid-area: lifespan; }
+        .detail-item:nth-child(3) { grid-area: temperament; }
+        .detail-item:nth-child(4) { grid-area: height; }
+        .detail-item:nth-child(5) { grid-area: weight; }
+        .detail-item:nth-child(6) { grid-area: colors; }
+        
+        .detail-item {
+            background: var(--secondary-color);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 3px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .detail-value {
+            color: var(--text-color);
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .upload-form {
+                padding: 20px;
+            }
+            .detail-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-areas:
+                    "origin lifespan"
+                    "temperament temperament"
+                    "height weight"
+                    "colors colors";
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dog Breed Detector</h1>
+        <p class="description">Upload a dog image and let our AI identify its breed with high accuracy</p>
+        
+        <div class="upload-form">
+            <form action="/" method="post" enctype="multipart/form-data">
+                <div class="file-input-container">
+                    <input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+                </div>
+                <button type="submit" class="analyze-btn">Analyze Image</button>
+            </form>
+        </div>
+
+        {% if error %}
+        <div class="error">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if filename and result %}
+<div class="result-container">
+    <h2>Analysis Result</h2>
+    <div class="image-container">
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded dog image">
+    </div>
+    
+    {% if result.breed %}
+    <div class="prediction">
+        <h3>Predicted Breed</h3>
+        <p class="breed-name">This is a {{ result.breed }}</p>
+        
+        <div class="breed-details">
+            <div class="confidence">
+                <span class="detail-label">Confidence:</span> 
+                <span class="detail-value">{{ (result.confidence * 100) | round(2) }}%</span>
+            </div>
+            
+            <div class="description">
+                <p>{{ result.description }}</p>
+            </div>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Origin:</span> 
+                    <span class="detail-value">{{ result.origin }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Life Span:</span> 
+                    <span class="detail-value">{{ result.life_span }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Temperament:</span> 
+                    <span class="detail-value">{{ result.temperament }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Height:</span> 
+                    <span class="detail-value">{{ result.height }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Weight:</span> 
+                    <span class="detail-value">{{ result.weight }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Colors:</span> 
+                    <span class="detail-value">{{ result.colors }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="prediction">
+        <h3>Analysis Result</h3>
+        <p>{{ result.message }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+    </div>
+</body>
+</html>
