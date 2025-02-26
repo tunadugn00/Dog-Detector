@@ -457,10 +457,6 @@ DOG_BREEDS_INFO = {
 }
 
 def get_breed_info(breed_name):
-    """
-    Trả về thông tin chi tiết về một giống chó theo tên.
-    Nếu không có thông tin, trả về thông tin mặc định.
-    """
     default_info = {
         "description": f"The {breed_name} is a recognized dog breed.",
         "origin": "Information not available",
@@ -469,3 +465,61 @@ def get_breed_info(breed_name):
     }
     
     return DOG_BREEDS_INFO.get(breed_name, default_info)
+
+def get_all_breeds():
+    """
+    Returns a list of all available dog breeds
+    """
+    # This should return all the breed keys from your breed info dictionary
+    # Example (modify according to your actual implementation):
+    breeds_dict = {
+    "Affenpinscher": {...},
+    "Airedale": {...},
+    "Appenzeller": {...},
+    "Basenji": {...},
+    "Basset": {...},
+    "Beagle": {...},
+    "Bloodhound": {...},
+    "Bluetick": {...},
+    "Borzoi": {...},
+    "Boxer": {...},
+    "Briard": {...},
+    "Bull": {...},
+    "Cairn": {...},
+    "Cardigan": {...},
+    "Chihuahua": {...},
+    "Chow": {...},
+    "Clumber": {...},
+    "Collie": {...},
+    "Dhole": {...},
+    "Dingo": {...},
+    "Doberman": {...},
+    "EntleBucher": {...},
+    "Groenendael": {...},
+    "Husky": {...},
+    "Keeshond": {...},
+    "Kelpie": {...},
+    "Komondor": {...},
+    "Kuvasz": {...},
+    "Leonberg": {...},
+    "Lhasa": {...},
+    "Malamute": {...},
+    "Malinois": {...},
+    "Otterhound": {...},
+    "Papillon": {...},
+    "Pekinese": {...},
+    "Pembroke": {...},
+    "Pomeranian": {...},
+    "Pug": {...},
+    "Redbone": {...},
+    "Rottweiler": {...},
+    "Saluki": {...},
+    "Samoyed": {...},
+    "Schipperke": {...},
+    "Vizsla": {...},
+    "Weimaraner": {...},
+    "Whippet": {...}
+}
+
+    
+    return sorted(list(breeds_dict.keys()))

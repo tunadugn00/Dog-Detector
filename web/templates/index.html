@@ -29,7 +29,6 @@
             line-height: 1.6;
         }
         
-
         .container {
             background: white;
             border-radius: 20px;
@@ -62,7 +61,38 @@
             margin-bottom: 40px;
         }
 
-        .upload-form {
+        .feature-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-form, .search-form {
             background: var(--secondary-color);
             padding: 30px;
             border-radius: 15px;
@@ -71,7 +101,7 @@
             transition: transform 0.3s ease;
         }
 
-        .upload-form:hover {
+        .upload-form:hover, .search-form:hover {
             transform: translateY(-5px);
         }
 
@@ -95,7 +125,7 @@
             background: #f8f9fa;
         }
 
-        .analyze-btn {
+        .analyze-btn, .search-btn {
             background: var(--primary-color);
             color: white;
             padding: 15px 30px;
@@ -111,7 +141,7 @@
             font-weight: 600;
         }
 
-        .analyze-btn:hover {
+        .analyze-btn:hover, .search-btn:hover {
             background: var(--accent-color);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
@@ -168,7 +198,7 @@
             margin: 0;
         }
 
-        .error {
+        .error, .search-error {
             background: #ff7675;
             color: white;
             padding: 15px;
@@ -177,6 +207,7 @@
             text-align: center;
             animation: shake 0.5s ease-in-out;
         }
+        
         .breed-name {
             font-size: 2.0em !important;
             font-weight: bold;
@@ -184,7 +215,6 @@
             color: #FFD700; 
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
         }
-        
         
         .breed-details {
             background: white;
@@ -220,6 +250,7 @@
             gap: 15px;
             margin-top: 20px;
         }
+        
         .detail-item:nth-child(1) { grid-area: origin; }
         .detail-item:nth-child(2) { grid-area: lifespan; }
         .detail-item:nth-child(3) { grid-area: temperament; }
@@ -251,6 +282,25 @@
             word-wrap: break-word;
         }
 
+        .search-form input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        .search-form select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            background-color: white;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-10px); }
@@ -270,9 +320,10 @@
                 font-size: 2em;
             }
 
-            .upload-form {
+            .upload-form, .search-form {
                 padding: 20px;
             }
+            
             .detail-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-areas:
@@ -282,21 +333,49 @@
                     "colors colors";
             }
             
+            .feature-tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                margin: 5px 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Dog Breed Detector</h1>
-        <p class="description">Upload a dog image and let our AI identify its breed with high accuracy</p>
+        <p class="description">Identify dog breeds by uploading an image or searching by name</p>
         
-        <div class="upload-form">
-            <form action="/" method="post" enctype="multipart/form-data">
-                <div class="file-input-container">
-                    <input type="file" name="file" accept=".jpg,.jpeg,.png" required>
-                </div>
-                <button type="submit" class="analyze-btn">Analyze Image</button>
-            </form>
+        <div class="feature-tabs">
+            <button class="tab-btn active" onclick="showTab('upload')">Upload Image</button>
+            <button class="tab-btn" onclick="showTab('search')">Search by Name</button>
+        </div>
+        
+        <div id="upload-tab" class="tab-content active">
+            <div class="upload-form">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <div class="file-input-container">
+                        <input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+                    </div>
+                    <button type="submit" class="analyze-btn">Analyze Image</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="search-tab" class="tab-content">
+            <div class="search-form">
+                <form action="/search" method="post">
+                    <select name="breed_name" required>
+                        <option value="">Select a dog breed</option>
+                        {% for breed in breeds_list %}
+                        <option value="{{ breed }}">{{ breed }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+            </div>
         </div>
 
         {% if error %}
@@ -305,64 +384,139 @@
         </div>
         {% endif %}
 
+        {% if search_error %}
+        <div class="search-error">
+            <p>{{ search_error }}</p>
+        </div>
+        {% endif %}
+
         {% if filename and result %}
-<div class="result-container">
-    <h2>Analysis Result</h2>
-    <div class="image-container">
-        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded dog image">
-    </div>
-    
-    {% if result.breed %}
-    <div class="prediction">
-        <h3>Predicted Breed</h3>
-        <p class="breed-name">This is a {{ result.breed }}</p>
-        
-        <div class="breed-details">
-            <div class="confidence">
-                <span class="detail-label">Confidence:</span> 
-                <span class="detail-value">{{ (result.confidence * 100) | round(2) }}%</span>
+        <div class="result-container">
+            <h2>Analysis Result</h2>
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded dog image">
             </div>
             
-            <div class="description">
-                <p>{{ result.description }}</p>
+            {% if result.breed %}
+            <div class="prediction">
+                <h3>Predicted Breed</h3>
+                <p class="breed-name">This is a {{ result.breed }}</p>
+                
+                <div class="breed-details">
+                    <div class="confidence">
+                        <span class="detail-label">Confidence:</span> 
+                        <span class="detail-value">{{ (result.confidence * 100) | round(2) }}%</span>
+                    </div>
+                    
+                    <div class="description">
+                        <p>{{ result.description }}</p>
+                    </div>
+                    
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Origin:</span> 
+                            <span class="detail-value">{{ result.origin }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Life Span:</span> 
+                            <span class="detail-value">{{ result.life_span }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Temperament:</span> 
+                            <span class="detail-value">{{ result.temperament }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Height:</span> 
+                            <span class="detail-value">{{ result.height }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Weight:</span> 
+                            <span class="detail-value">{{ result.weight }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Colors:</span> 
+                            <span class="detail-value">{{ result.colors }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="prediction">
+                <h3>Analysis Result</h3>
+                <p>{{ result.message }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if search_result %}
+        <div class="result-container">
+            <h2>Breed Information</h2>
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='breed_images/' + search_result.image) }}" alt="{{ search_result.breed }} image">
             </div>
             
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Origin:</span> 
-                    <span class="detail-value">{{ result.origin }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Life Span:</span> 
-                    <span class="detail-value">{{ result.life_span }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Temperament:</span> 
-                    <span class="detail-value">{{ result.temperament }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Height:</span> 
-                    <span class="detail-value">{{ result.height }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Weight:</span> 
-                    <span class="detail-value">{{ result.weight }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Colors:</span> 
-                    <span class="detail-value">{{ result.colors }}</span>
+            <div class="prediction">
+                <h3>Dog Breed</h3>
+                <p class="breed-name">{{ search_result.breed }}</p>
+                
+                <div class="breed-details">
+                    <div class="description">
+                        <p>{{ search_result.description }}</p>
+                    </div>
+                    
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Origin:</span> 
+                            <span class="detail-value">{{ search_result.origin }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Life Span:</span> 
+                            <span class="detail-value">{{ search_result.life_span }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Temperament:</span> 
+                            <span class="detail-value">{{ search_result.temperament }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Height:</span> 
+                            <span class="detail-value">{{ search_result.height }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Weight:</span> 
+                            <span class="detail-value">{{ search_result.weight }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Colors:</span> 
+                            <span class="detail-value">{{ search_result.colors }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="prediction">
-        <h3>Analysis Result</h3>
-        <p>{{ result.message }}</p>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show the selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Activate the clicked button
+            event.currentTarget.classList.add('active');
+        }
+    </script>
 </body>
 </html>
